@@ -1,0 +1,83 @@
+@page "/edit"
+@rendermode RenderMode.InteractiveServer
+
+<PageTitle>Save HTML</PageTitle>
+<HeadContent>
+    <script src="/tailwind.cdn.js"></script>
+</HeadContent>
+
+<div class="p-6 bg-white">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4">Edit Content</h1>
+
+    <form @onsubmit="HandleSubmit" class="space-y-4">
+        <div>
+            <label for="htmlContent" class="block text-sm font-medium text-gray-700">HTML Content:</label>
+            <textarea id="htmlContent" 
+                      @bind="HtmlContent" 
+                      rows="10" 
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-800 p-2"
+                      placeholder="Enter your HTML here..."></textarea>
+        </div>
+        <div>
+            <button type="submit" 
+                    class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                Save
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Preview:</h3>
+        <div class="border border-gray-300 rounded-md p-4 bg-gray-50 text-gray-800">
+            @((MarkupString)HtmlContent)
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+    private string HtmlContent { get; set; } = string.Empty;
+
+    private IJSObjectReference Module { get; set; } = default!;
+    private DotNetObjectReference<Edit> DotNetRef { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string filePath = Path.Combine("wwwroot", "content.html");
+
+        if (string.IsNullOrEmpty(HtmlContent))
+
+        {
+
+            // Check if the file exists before trying to read it
+            if (File.Exists(filePath))
+            {
+                HtmlContent = await File.ReadAllTextAsync(filePath);
+            }
+            else
+            {
+                HtmlContent ??= "<p>No content available. Add some HTML and save!</p>";
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        var res = await Module.InvokeAsync<string>("getCss", DotNetRef, HtmlContent);
+        string cssPath = Path.Combine("wwwroot", "generated.css");
+        await File.WriteAllTextAsync(cssPath, res);
+
+        string filePath = Path.Combine("wwwroot", "content.html");
+        await File.WriteAllTextAsync(filePath, HtmlContent);
+        Console.WriteLine("HTML content saved to wwwroot/content.html");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender) return;
+
+        Module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/TailwindForm.js");
+            
+    }
+}

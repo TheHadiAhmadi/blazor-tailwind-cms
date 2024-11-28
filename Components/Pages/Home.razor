@@ -1,0 +1,26 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<HeadContent>
+    <link rel="stylesheet" href="/generated.css"/>
+</HeadContent>
+
+@((MarkupString)Content)
+
+@code {
+    private string Content { get; set; } = string.Empty;
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        string filePath = "wwwroot/content.html";
+        if (File.Exists(filePath))
+        {
+            Content = await File.ReadAllTextAsync(filePath);
+        }
+        else
+        {
+            Content = "File not found.";
+        }
+    }
+}

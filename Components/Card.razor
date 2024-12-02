@@ -1,0 +1,20 @@
+@inherits ComponentBase
+@namespace BlazorCMS.Components
+@implements IDisposable
+
+<div class="card">Card</div>
+
+@code {
+    [Inject]
+    public ViewState ViewState { get; set; } = default!;
+
+    public void Dispose()
+    {
+        ViewState.RemoveCssFile("card");
+    }
+
+    protected override void OnInitialized()
+    {
+        ViewState.AddCssFile("card");
+    }
+}

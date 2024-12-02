@@ -1,0 +1,21 @@
+@inherits ComponentBase
+@implements IDisposable
+
+@namespace BlazorCMS.Components
+
+<button>BUTTON</button>
+
+@code {
+    [Inject]
+    public ViewState ViewState { get; set; } = default!;
+
+    public void Dispose()
+    {
+        ViewState.RemoveCssFile("button");
+    }
+
+    protected override void OnInitialized()
+    {
+        ViewState.AddCssFile("button");
+    }
+}

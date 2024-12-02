@@ -6,6 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddScoped(sp => {
+    return new ViewState();
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -16,6 +21,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -25,3 +32,30 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+public class ViewState
+{
+    public Dictionary<string, string> Value { get; set; } = [];
+    public Action OnCssChanged { get; set; }
+
+
+    public void AddCssFile(string name) 
+    {
+        if(!Value.ContainsKey(name))
+        {
+            Value.Add(name, $"<link rel=\"stylesheet\" href=\"/{name}.css\">");
+            OnCssChanged.Invoke();
+        }
+    }
+    
+    public void RemoveCssFile(string name) 
+    {
+        if(Value.ContainsKey(name))
+        {
+            Value.Remove(name);
+            OnCssChanged.Invoke();
+        }
+    }
+};
+
+// check cmponent library readme, ... 

@@ -1,0 +1,21 @@
+@((MarkupString)Value)
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Inject]
+    public ViewState ViewState { get; set; } = default!;
+
+    public void OnCssChanged()
+    {
+        Value = string.Join("\n", ViewState.Value.Select(x => x.Value));
+        StateHasChanged();
+    } 
+
+    protected override void OnInitialized()
+    {
+        ViewState.OnCssChanged += OnCssChanged;
+    }
+}
+
